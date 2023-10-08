@@ -1,4 +1,3 @@
-// 实现 fsm
 package main
 
 import (
@@ -39,25 +38,27 @@ func (m *StateMachine) findTransMatching(fromState string, event string) *Transi
 	return nil
 }
 
-func (m *StateMachine) Trigger(event string, args ...interface{}) error {
+func (m *StateMachine) Trigger(event string, args ...interface{}) (err error) {
 	trans := m.findTransMatching(m.state, event)
 	if trans == nil {
-		fmt.Println("转换状态失败: 未找到trans")
-		return nil
+		err = errors.New("转换状态失败: 未找到trans")
+		return
 	}
 
-	var err error
-	if trans.event != "" {
-		err = m.handleEvent(m.state, trans.to, args)
-		if err != nil {
-			fmt.Println("转换状态失败: 未找到handleEvent失败")
-			return errors.New("")
-		}
+	if trans.event == "" {
+		err = errors.New("未找到具体的event")
+		return
+	}
+
+	err = m.handleEvent(m.state, trans.to, args)
+	if err != nil {
+		err = errors.New("转换状态失败: 未找到handleEvent")
+		return
 	}
 
 	m.changeState(trans.to)
 
-	return err
+	return
 }
 
 func main() {
